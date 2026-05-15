@@ -29,9 +29,24 @@
         .dl-btn:hover{border-color:#e8453c;color:#e8453c}
         .offline{font-size:11px;color:#8b949e;margin-top:24px;text-align:center}
         .offline strong{color:#34d399}
+        .brand{display:flex;align-items:center;gap:10px;margin-bottom:20px}
+        .brand svg{width:36px;height:36px}
+        .brand-text{font-size:11px;color:#6e7681;line-height:1.4}
+        .brand-text a{color:#8b949e;text-decoration:none}
+        .brand-text a:hover{color:#e8453c}
+        .footer{margin-top:32px;text-align:center;font-size:11px;color:#3d444d;line-height:1.8}
+        .footer a{color:#6e7681;text-decoration:none}
+        .footer a:hover{color:#e8453c}
     </style>
 </head>
 <body>
+    <div class="brand">
+        <svg viewBox="0 0 36 36" fill="none"><rect width="36" height="36" rx="9" fill="#e8453c"/><path d="M9 11.5h6.5v3H9zM12 14.5h3.5v10H12zM20.5 11.5H27v3h-6.5z" fill="#fff" opacity=".9"/><path d="M23.5 14.5H27v10h-3.5z" fill="#fff" opacity=".6"/></svg>
+        <div class="brand-text">
+            <div style="font-weight:700;font-size:13px;color:#e6edf3">topriv</div>
+            <a href="https://topriv.com" target="_blank">topriv.com</a> · <a href="https://privconvert.com" target="_blank">privconvert.com</a>
+        </div>
+    </div>
     <h1><span>.priv</span> offline tool</h1>
     <p class="sub">Encrypt and decrypt .priv files locally. No server, no internet needed.</p>
 
@@ -66,6 +81,14 @@
     </div>
 
     <p class="offline"><strong>100% offline</strong> - this page works without an internet connection</p>
+
+    <div class="footer">
+        Built by <a href="https://topriv.com" target="_blank"><strong>topriv</strong></a> — Privacy-first digital tools<br>
+        <a href="https://privconvert.com/tools/priv-encrypt/" target="_blank">Web Encrypt</a> · 
+        <a href="https://privconvert.com/tools/priv-decrypt/" target="_blank">Web Decrypt</a> · 
+        <a href="https://github.com/toprivHQ/priv-format" target="_blank">GitHub</a> · 
+        <a href="https://t.me/toprivHQ" target="_blank">Telegram</a>
+    </div>
 
     <script type="module">
     import { encrypt, decrypt } from './priv.js';
