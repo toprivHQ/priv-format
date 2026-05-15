@@ -19,6 +19,31 @@ Existing archive formats like ZIP and 7z were designed for compression, not priv
 
 ## Quick start
 
+### Command line (Linux / macOS)
+
+```bash
+# Install
+git clone https://github.com/toprivHQ/priv-format.git
+cd priv-format
+pip install cryptography
+sudo cp priv /usr/local/bin/
+
+# Encrypt files
+priv encrypt secret.pdf photos/ -o bundle.priv
+
+# Decrypt
+priv decrypt bundle.priv -o ./decrypted/
+
+# View file info without decrypting
+priv info bundle.priv
+```
+
+**One-liner install:**
+
+```bash
+curl -sL https://raw.githubusercontent.com/toprivHQ/priv-format/main/priv -o /usr/local/bin/priv && chmod +x /usr/local/bin/priv && pip install cryptography
+```
+
 ### In the browser
 
 No installation needed. Go to [privconvert.com/tools/priv-encrypt](https://privconvert.com/tools/priv-encrypt/) and drop your files.
@@ -91,6 +116,23 @@ Once decrypted, the payload contains:
 | 4B     |1B | 1B    | 4B     | 32B  |12B | Variable           |
 +--------+---+-------+--------+------+----+--------------------+
 ```
+
+## CLI reference
+
+| Command | Description |
+|---------|-------------|
+| `priv encrypt <files...> -o out.priv` | Encrypt files into a .priv container |
+| `priv decrypt file.priv -o ./dir/` | Decrypt a .priv file to a directory |
+| `priv info file.priv` | Show metadata without decrypting |
+| `priv encrypt dir/ -o out.priv` | Encrypt an entire directory recursively |
+| `priv encrypt f.txt --expiry 1735689600` | Set expiry date (Unix timestamp) |
+
+Files encrypted with the CLI are fully compatible with the browser tools and vice versa.
+
+## Requirements
+
+- **Browser**: Any modern browser (Chrome, Firefox, Safari, Edge)
+- **CLI**: Python 3.8+ with the `cryptography` package
 
 ## License
 
