@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>.priv - Offline Encrypt/Decrypt Tool</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+        h1{font-size:28px;font-weight:800;margin-bottom:8px}
+        h1 span{color:#e8453c}
+        .sub{color:#8b949e;font-size:14px;margin-bottom:32px}
+        .tabs{display:flex;gap:4px;margin-bottom:24px}
+        .tab{padding:8px 20px;border-radius:8px;border:1px solid #30363d;background:transparent;color:#8b949e;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit}
+        .tab.active{background:#e8453c;color:#fff;border-color:#e8453c}
+        .card{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:24px;width:100%;max-width:520px;margin-bottom:16px}
+        label{display:block;font-size:13px;font-weight:600;color:#8b949e;margin-bottom:6px}
+        input[type=password],input[type=text],input[type=file]{width:100%;padding:10px 12px;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:6px;font-size:14px;font-family:inherit;margin-bottom:14px}
+        .btn{display:block;width:100%;padding:12px;border-radius:8px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;background:#e8453c;color:#fff;transition:background .2s}
+        .btn:hover{background:#d63a32}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .msg{padding:12px;border-radius:8px;font-size:13px;margin-top:12px;display:none}
+        .msg.ok{display:block;background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.2)}
+        .msg.err{display:block;background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+        .file-list{margin-top:12px}
+        .file-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #30363d;font-size:13px}
+        .file-item:last-child{border:none}
+        .dl-btn{background:none;border:1px solid #30363d;color:#8b949e;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit}
+        .dl-btn:hover{border-color:#e8453c;color:#e8453c}
+        .offline{font-size:11px;color:#8b949e;margin-top:24px;text-align:center}
+        .offline strong{color:#34d399}
+    </style>
+</head>
+<body>
+    <h1><span>.priv</span> offline tool</h1>
+    <p class="sub">Encrypt and decrypt .priv files locally. No server, no internet needed.</p>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('encrypt')">Encrypt</button>
+        <button class="tab" onclick="showTab('decrypt')">Decrypt</button>
+    </div>
+
+    <div id="encryptTab">
+        <div class="card">
+            <label>Select files</label>
+            <input type="file" id="encFiles" multiple>
+            <label>Password</label>
+            <input type="password" id="encPassword" placeholder="Enter a strong password">
+            <label>Confirm password</label>
+            <input type="password" id="encConfirm" placeholder="Re-enter password">
+            <button class="btn" id="encBtn" onclick="doEncrypt()">Encrypt & Create .priv</button>
+            <div class="msg" id="encMsg"></div>
+        </div>
+    </div>
+
+    <div id="decryptTab" style="display:none">
+        <div class="card">
+            <label>Select .priv file</label>
+            <input type="file" id="decFile" accept=".priv">
+            <label>Password</label>
+            <input type="password" id="decPassword" placeholder="Enter the password">
+            <button class="btn" id="decBtn" onclick="doDecrypt()">Decrypt</button>
+            <div class="msg" id="decMsg"></div>
+            <div class="file-list" id="decFiles"></div>
+        </div>
+    </div>
+
+    <p class="offline"><strong>100% offline</strong> - this page works without an internet connection</p>
+
+    <script type="module">
+    import { encrypt, decrypt } from './priv.js';
+
+    window.showTab = function(tab) {
+        document.getElementById('encryptTab').style.display = tab === 'encrypt' ? '' : 'none';
+        document.getElementById('decryptTab').style.display = tab === 'decrypt' ? '' : 'none';
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('active', (i === 0 && tab === 'encrypt') || (i === 1 && tab === 'decrypt'));
+        });
+    };
+
+    window.doEncrypt = async function() {
+        const fileInput = document.getElementById('encFiles');
+        const password = document.getElementById('encPassword').value;
+        const confirm = document.getElementById('encConfirm').value;
+        const msg = document.getElementById('encMsg');
+
+        if (!fileInput.files.length) { msg.className='msg err'; msg.textContent='Select at least one file'; return; }
+        if (password.length < 4) { msg.className='msg err'; msg.textContent='Password must be at least 4 characters'; return; }
+        if (password !== confirm) { msg.className='msg err'; msg.textContent='Passwords do not match'; return; }
+
+        msg.className='msg ok'; msg.textContent='Encrypting...';
+        try {
+            const files = [];
+            for (const f of fileInput.files) {
+                files.push({ name: f.name, data: new Uint8Array(await f.arrayBuffer()) });
+            }
+            const privFile = await encrypt(files, password);
+            const name = files.length === 1 ? files[0].name.replace(/\.[^.]+$/, '') + '.priv' : 'encrypted.priv';
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([privFile]));
+            a.download = name;
+            a.click();
+            msg.textContent = 'Done! File downloaded.';
+        } catch(e) {
+            msg.className='msg err'; msg.textContent='Error: ' + e.message;
+        }
+    };
+
+    window.doDecrypt = async function() {
+        const fileInput = document.getElementById('decFile');
+        const password = document.getElementById('decPassword').value;
+        const msg = document.getElementById('decMsg');
+        const filesList = document.getElementById('decFiles');
+
+        if (!fileInput.files.length) { msg.className='msg err'; msg.textContent='Select a .priv file'; return; }
+        if (!password) { msg.className='msg err'; msg.textContent='Enter the password'; return; }
+
+        msg.className='msg ok'; msg.textContent='Decrypting...';
+        filesList.innerHTML = '';
+
+        try {
+            const data = new Uint8Array(await fileInput.files[0].arrayBuffer());
+            const result = await decrypt(data, password);
+            msg.textContent = `Decrypted ${result.files.length} file(s)`;
+
+            window._decryptedFiles = result.files;
+            let html = '';
+            result.files.forEach((f, i) => {
+                const size = f.data.length < 1048576 ? (f.data.length/1024).toFixed(1)+' KB' : (f.data.length/1048576).toFixed(1)+' MB';
+                html += `<div class="file-item"><span>${f.name} (${size})</span><button class="dl-btn" onclick="dlFile(${i})">Download</button></div>`;
+            });
+            filesList.innerHTML = html;
+        } catch(e) {
+            msg.className='msg err'; msg.textContent=e.message;
+        }
+    };
+
+    window.dlFile = function(i) {
+        const f = window._decryptedFiles[i];
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([f.data]));
+        a.download = f.name;
+        a.click();
+    };
+    </script>
+</body>
+</html>
