@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" alt="topriv" width="80" style="border-radius:16px">
+</p>
+
 # .priv - Encrypted File Format
 
 An open encrypted container format designed for privacy. AES-256-GCM encryption, automatic metadata stripping, and hidden filenames.
