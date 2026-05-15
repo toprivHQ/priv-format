@@ -2,7 +2,7 @@
 """
 priv - Encrypt and decrypt .priv files from the command line.
 
-Part of the .priv open encrypted file format.
+Part of the .priv open encrypted file format by topriv.
 https://github.com/toprivHQ/priv-format
 
 Usage:
@@ -123,7 +123,7 @@ def encrypt_files(file_paths: list[str], password: str, output: str, expiry: int
     total_size = len(files)
     raw_size = sum(len(d) for _, d in files)
     enc_size = HEADER_SIZE + len(ciphertext)
-    print(f"Encrypted {total_size} file(s) ({format_size(raw_size)}) → {out_path} ({format_size(enc_size)})")
+    print(f"\033[32m✓\033[0m Encrypted {total_size} file(s) ({format_size(raw_size)}) → {out_path} ({format_size(enc_size)})")
 
 
 def decrypt_file(priv_path: str, password: str, output: str):
@@ -180,7 +180,7 @@ def decrypt_file(priv_path: str, password: str, output: str):
         out_file.write_bytes(file_data)
         print(f"  {name} ({format_size(len(file_data))})")
 
-    print(f"\nDecrypted {len(files)} file(s) to {out_dir}/")
+    print(f"\n\033[32m✓\033[0m Decrypted {len(files)} file(s) to {out_dir}/")
 
 
 def info_file(priv_path: str):
@@ -238,12 +238,26 @@ def ask_password(confirm: bool = False) -> str:
     return pw
 
 
+BANNER = """
+\033[1;31m ██████╗ ██████╗ ██╗██╗   ██╗
+ ██╔══██╗██╔══██╗██║██║   ██║
+ ██████╔╝██████╔╝██║██║   ██║
+ ██╔═══╝ ██╔══██╗██║╚██╗ ██╔╝
+ ██║     ██║  ██║██║ ╚████╔╝
+ ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝\033[0m
+ \033[2mby topriv · https://topriv.com\033[0m
+"""
+
+VERSION_STR = "priv 1.0.0 · .priv format v1 · by topriv (https://topriv.com)"
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="priv",
-        description="Encrypt and decrypt .priv files - an open encrypted container format.",
-        epilog="https://github.com/toprivHQ/priv-format",
+        description="Encrypt and decrypt .priv files - an open encrypted container format by topriv.",
+        epilog="Built by topriv — https://topriv.com | https://github.com/toprivHQ/priv-format",
     )
+    parser.add_argument("-v", "--version", action="version", version=VERSION_STR)
     sub = parser.add_subparsers(dest="command", required=True)
 
     # encrypt
@@ -263,6 +277,9 @@ def main():
     inf.add_argument("file", help="The .priv file to inspect")
 
     args = parser.parse_args()
+
+    if sys.stdout.isatty():
+        print(BANNER)
 
     if args.command in ("encrypt", "e"):
         pw = ask_password(confirm=True)
